@@ -9,3 +9,8 @@ venv/
 
 # Django
 db.sqlite3
+# Flask
+flask_api/instance/
+flask_api/.venv/
+flask_api/*.db
+flask_api/.env
