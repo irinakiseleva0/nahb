@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>NAHB - Stats</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body { font-family: system-ui, Arial, sans-serif; max-width: 900px; margin: 40px auto; padding: 0 16px; }
+    table { border-collapse: collapse; width: 100%; margin: 12px 0 24px; }
+    th, td { border: 1px solid #ddd; padding: 10px; }
+    th { background: #f7f7f7; text-align: left; }
+    .muted { color:#666; }
+  </style>
+</head>
+<body>
+  <p><a href="{% url 'story_list' %}">← Back</a></p>
+  <h1>Statistics</h1>
+  <p class="muted">Stored in Django DB (Play records)</p>
+
+  <h2>Plays per story</h2>
+  <table>
+    <tr><th>Story ID</th><th>Plays</th></tr>
+    {% for row in plays_per_story %}
+      <tr><td>{{ row.story_id }}</td><td>{{ row.count }}</td></tr>
+    {% empty %}
+      <tr><td colspan="2">No plays yet.</td></tr>
+    {% endfor %}
+  </table>
+
+  <h2>Endings reached</h2>
+  <table>
+    <tr><th>Story ID</th><th>Ending page ID</th><th>Count</th></tr>
+    {% for row in endings %}
+      <tr><td>{{ row.story_id }}</td><td>{{ row.ending_page_id }}</td><td>{{ row.count }}</td></tr>
+    {% empty %}
+      <tr><td colspan="3">No endings yet.</td></tr>
+    {% endfor %}
+  </table>
+</body>
+</html>

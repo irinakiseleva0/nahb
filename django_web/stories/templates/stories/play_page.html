@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>NAHB - Play</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body { font-family: system-ui, Arial, sans-serif; max-width: 900px; margin: 40px auto; padding: 0 16px; }
+    .box { border: 1px solid #ddd; border-radius: 10px; padding: 16px; margin: 14px 0; }
+    .muted { color: #666; }
+    button { padding: 10px 12px; border-radius: 10px; border: 1px solid #bbb; background: #fff; cursor: pointer; width: 100%; text-align: left; }
+    button:hover { background: #f5f5f5; }
+    a { color: #0b57d0; text-decoration: none; }
+  </style>
+</head>
+<body>
+
+<p><a href="{% url 'story_list' %}">← Back to stories</a></p>
+
+<div class="box">
+  <div>{{ page.text }}</div>
+</div>
+
+{% if page.is_ending %}
+  <div class="box">
+    <h3>The End</h3>
+    {% if page.ending_label %}
+      <p class="muted">Ending: <strong>{{ page.ending_label }}</strong></p>
+    {% endif %}
+    <p class="muted">This ending was saved in Django (Play).</p>
+  </div>
+{% else %}
+  <div class="box">
+    <h3>Choices</h3>
+
+    {% if choices and choices|length > 0 %}
+      {% for c in choices %}
+        <form method="post" action="{% url 'choose' page.id %}" style="margin: 10px 0;">
+          {% csrf_token %}
+          <input type="hidden" name="next_page_id" value="{{ c.next_page_id }}">
+          <button type="submit">{{ c.text }}</button>
+        </form>
+      {% endfor %}
+    {% else %}
+      <p class="muted">No choices on this page.</p>
+    {% endif %}
+  </div>
+{% endif %}
+
+</body>
+</html>
