@@ -62,3 +62,27 @@ def choose(request, page_id: int):
         return redirect("play_page", page_id=page_id)
 
     return redirect("play_page", page_id=int(next_page_id))
+from django.db.models import Count
+
+
+def stats(request):
+    plays_per_story = (
+        Play.objects.values("story_id")
+        .annotate(plays=Count("id"))
+        .order_by("-plays")
+    )
+
+    endings = (
+        Play.objects.values("story_id", "ending_page_id")
+        .annotate(count=Count("id"))
+        .order_by("story_id", "-count")
+    )
+
+    return render(
+        request,
+        "stories/stats.html",
+        {
+            "plays_per_story": list(plays_per_story),
+            "endings": list(endings),
+        },
+    )
