@@ -20,6 +20,10 @@ def story_list(request):
 
 
 def play_start(request, story_id: int):
+    for k in list(request.session.keys()):
+        if k.startswith(f"ended_{story_id}_"):
+            del request.session[k]
+
     try:
         data = flask_get(f"/stories/{story_id}/start")
     except RequestException as e:
@@ -27,6 +31,13 @@ def play_start(request, story_id: int):
 
     page = data["page"]
     choices = data.get("choices", [])
+
+    if page.get("is_ending"):
+        ending_id = page.get("id")
+        key = f"ended_{story_id}_{ending_id}"
+        if not request.session.get(key):
+            Play.objects.create(story_id=story_id, ending_page_id=ending_id)
+            request.session[key] = True
 
     return render(request, "stories/play_page.html", {"page": page, "choices": choices})
 
