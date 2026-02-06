@@ -6,6 +6,7 @@ from requests.exceptions import RequestException
 
 from .models import Play
 from .forms import StoryForm
+from .forms import PageForm, ChoiceForm
 from web.flask_client import flask_get, flask_post, flask_put, flask_delete
 
 def story_list(request):
@@ -132,3 +133,57 @@ def story_delete(request, story_id: int):
 
     s = flask_get(f"/stories/{story_id}")
     return render(request, "stories/story_delete.html", {"story": s})
+
+
+def story_builder(request, story_id: int):
+    try:
+        story = flask_get(f"/stories/{story_id}")
+    except RequestException as e:
+        raise Http404(f"Flask API error: {e}")
+
+    page_form = PageForm()
+    choice_form = ChoiceForm()
+
+    if request.method == "POST":
+        action = request.POST.get("action")
+
+        if action == "add_page":
+            page_form = PageForm(request.POST)
+            if page_form.is_valid():
+                payload = page_form.cleaned_data
+
+                if not payload.get("is_ending"):
+                    payload.pop("ending_label", None)
+
+                try:
+                    created = flask_post(f"/stories/{story_id}/pages", payload)
+                    messages.success(request, f"Page created (id={created.get('id')}).")
+                    return redirect("story_builder", story_id=story_id)
+                except RequestException as e:
+                    messages.error(request, f"Failed to create page: {e}")
+
+        elif action == "add_choice":
+            choice_form = ChoiceForm(request.POST)
+            if choice_form.is_valid():
+                payload = choice_form.cleaned_data
+                page_id = payload.pop("page_id")
+                try:
+                    created = flask_post(f"/pages/{page_id}/choices", payload)
+                    messages.success(request, f"Choice created (id={created.get('id')}).")
+                    return redirect("story_builder", story_id=story_id)
+                except RequestException as e:
+                    messages.error(request, f"Failed to create choice: {e}")
+
+        else:
+            messages.error(request, "Unknown action.")
+
+    return render(
+        request,
+        "stories/story_builder.html",
+        {
+            "story": story,
+            "page_form": page_form,
+            "choice_form": choice_form,
+        },
+    )
+

@@ -71,9 +71,15 @@
   <div class="card">
     <p class="title">{{ s.title }}</p>
     <p class="desc">{{ s.description|default:"(no description)" }}</p>
+    <p><a href="{% url 'story_create' %}">＋ Create story</a></p>
 
     <div class="actions">
+      <a href="{% url 'story_edit' s.id %}">Edit</a> |
+      <a href="{% url 'story_delete' s.id %}">Delete</a> |
+      <a href="{% url 'story_builder' s.id %}">Build</a> |
       <a href="{% url 'play_start' s.id %}">▶ Play</a>
+
+
     </div>
   </div>
   {% endfor %}
