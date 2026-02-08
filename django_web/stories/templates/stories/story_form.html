@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>NAHB - Story</title>
+  <style>
+    body { font-family: system-ui, Arial, sans-serif; max-width: 900px; margin: 40px auto; padding: 0 16px; }
+    label { display:block; margin-top: 12px; font-weight: 600; }
+    input, textarea, select { width:100%; padding:10px; border:1px solid #ddd; border-radius:10px; }
+    button { margin-top: 14px; padding:10px 14px; border:1px solid #ddd; border-radius:10px; background:#fff; cursor:pointer; }
+    a { color:#0b57d0; text-decoration:none; }
+  </style>
+</head>
+<body>
+  <p><a href="{% url 'story_list' %}">← Back</a></p>
+  <h1>{% if mode == "create" %}Create story{% else %}Edit story #{{ story_id }}{% endif %}</h1>
+
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Save</button>
+  </form>
+</body>
+</html>

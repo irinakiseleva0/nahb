@@ -2,40 +2,31 @@ import requests
 from django.conf import settings
 
 
-def flask_get(path: str, params: dict | None = None) -> dict | list:
-    """
-    Small helper for GET requests to Flask API.
-    Returns parsed JSON or raises an exception (so Django shows a clear error).
-    """
+def _url(path: str) -> str:
     base = settings.FLASK_API_BASE_URL.rstrip("/")
-    url = f"{base}{path}"
+    path = path if path.startswith("/") else f"/{path}"
+    return base + path
 
-    resp = requests.get(url, params=params, timeout=5)
+
+def flask_get(path: str, params=None):
+    resp = requests.get(_url(path), params=params, timeout=5)
     resp.raise_for_status()
     return resp.json()
 
 
-def flask_post(path: str, json: dict) -> dict:
-    base = settings.FLASK_API_BASE_URL.rstrip("/")
-    url = f"{base}{path}"
-
-    resp = requests.post(url, json=json, timeout=5)
+def flask_post(path: str, payload: dict):
+    resp = requests.post(_url(path), json=payload, timeout=5)
     resp.raise_for_status()
     return resp.json()
 
 
-def flask_put(path: str, json: dict) -> dict:
-    base = settings.FLASK_API_BASE_URL.rstrip("/")
-    url = f"{base}{path}"
-
-    resp = requests.put(url, json=json, timeout=5)
+def flask_put(path: str, payload: dict):
+    resp = requests.put(_url(path), json=payload, timeout=5)
     resp.raise_for_status()
     return resp.json()
 
 
-def flask_delete(path: str) -> None:
-    base = settings.FLASK_API_BASE_URL.rstrip("/")
-    url = f"{base}{path}"
-
-    resp = requests.delete(url, timeout=5)
+def flask_delete(path: str):
+    resp = requests.delete(_url(path), timeout=5)
     resp.raise_for_status()
+    return resp.json() if resp.content else None
