@@ -1,27 +1,76 @@
-<!doctype html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>NAHB - Delete</title>
-  <style>
-    body { font-family: system-ui, Arial, sans-serif; max-width: 900px; margin: 40px auto; padding: 0 16px; }
-    .box { border:1px solid #ddd; border-radius:10px; padding:16px; }
-    button { margin-top: 14px; padding:10px 14px; border:1px solid #ddd; border-radius:10px; background:#fff; cursor:pointer; }
-    a { color:#0b57d0; text-decoration:none; }
-  </style>
-</head>
-<body>
-  <p><a href="{% url 'story_list' %}">← Back</a></p>
-  <h1>Delete story</h1>
+{% extends "stories/base.html" %}
+{% block title %}NAHB - Delete story{% endblock %}
 
-  <div class="box">
-    <p><strong>{{ story.title }}</strong></p>
-    <p>{{ story.description }}</p>
+{% block content %}
+  <div class="hero">
+    <div class="h1">Delete story</div>
+    <div class="muted">
+      This will delete the story in Flask. (Plays stored in Django will remain unless you delete them separately.)
+    </div>
+
+    <div class="row" style="margin-top:14px;">
+      <a class="btn" href="{% url 'story_list' %}">← Back to stories</a>
+      {% if story and story.id %}
+        <a class="btn" href="{% url 'story_edit' story.id %}">✏️ Edit</a>
+        <a class="btn primary" href="{% url 'story_builder' story.id %}">🧱 Build</a>
+      {% endif %}
+    </div>
   </div>
 
-  <form method="post">
-    {% csrf_token %}
-    <button type="submit">Confirm delete</button>
-  </form>
-</body>
-</html>
+  <div class="grid two">
+    <!-- CONFIRM CARD -->
+    <div class="card">
+      <p class="title" style="font-size:20px; margin-bottom:6px;">Confirm deletion</p>
+      <p class="desc" style="margin-bottom:14px;">
+        You are about to permanently delete this story:
+      </p>
+
+      <div class="card" style="background:#fff; border:1px solid rgba(17,24,39,.12); box-shadow:none;">
+        <p class="title" style="margin-bottom:6px;">
+          {{ story.title|default:"(no title)" }}
+        </p>
+        <p class="desc">
+          {{ story.description|default:"(no description)" }}
+        </p>
+        <p class="muted" style="margin-top:10px;">
+          id: <code>{{ story.id }}</code>
+          {% if story.status %} · status: <code>{{ story.status }}</code>{% endif %}
+          {% if story.start_page_id %} · start_page_id: <code>{{ story.start_page_id }}</code>{% endif %}
+        </p>
+      </div>
+
+      <form method="post" style="margin-top:16px;">
+        {% csrf_token %}
+        <div class="row">
+          <button class="btn danger" type="submit">Confirm delete</button>
+          <a class="btn" href="{% url 'story_list' %}">Cancel</a>
+        </div>
+      </form>
+    </div>
+
+    <!-- SIDE INFO CARD -->
+    <div class="card">
+      <p class="title">What gets deleted?</p>
+
+      <div class="pillRow">
+        <span class="pill"><span class="dot err"></span>Flask story</span>
+        <span class="pill"><span class="dot err"></span>Flask pages/choices</span>
+        <span class="pill"><span class="dot ok"></span>Django plays stay</span>
+      </div>
+
+      <div class="muted" style="margin-top:12px; line-height:1.6;">
+        <ul style="margin: 8px 0 0; padding-left: 18px;">
+          <li>Deleting is not reversible.</li>
+          <li>If you only want to hide it, set status to <code>draft</code> instead.</li>
+          <li>You can keep stats/plays for reporting even after deletion.</li>
+        </ul>
+      </div>
+
+      {% if story and story.id %}
+        <div class="row" style="margin-top:16px;">
+          <a class="btn full" href="{% url 'story_edit' story.id %}">Instead: set to draft</a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

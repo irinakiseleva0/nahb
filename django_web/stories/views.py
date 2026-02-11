@@ -25,12 +25,12 @@ def play_start(request, story_id: int):
     for k in list(request.session.keys()):
         if k.startswith(f"ended_{story_id}_"):
             del request.session[k]
-            request.session.modified = True
 
     try:
         data = flask_get(f"/stories/{story_id}/start")
     except RequestException as e:
-        raise Http404(f"Flask API error: {e}")
+        messages.error(request, "This story has no start page yet. Open Build and create a start page.")
+        return redirect("story_builder", story_id=story_id)
 
     page = data["page"]
     choices = data.get("choices", [])

@@ -1,51 +1,50 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <title>NAHB - Play</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    body { font-family: system-ui, Arial, sans-serif; max-width: 900px; margin: 40px auto; padding: 0 16px; }
-    .box { border: 1px solid #ddd; border-radius: 10px; padding: 16px; margin: 14px 0; }
-    .muted { color: #666; }
-    button { padding: 10px 12px; border-radius: 10px; border: 1px solid #bbb; background: #fff; cursor: pointer; width: 100%; text-align: left; }
-    button:hover { background: #f5f5f5; }
-    a { color: #0b57d0; text-decoration: none; }
-  </style>
-</head>
-<body>
+{% extends "stories/base.html" %}
+{% block title %}NAHB - Play{% endblock %}
 
-<p><a href="{% url 'story_list' %}">← Back to stories</a></p>
-
-<div class="box">
-  <div>{{ page.text }}</div>
-</div>
-
-{% if page.is_ending %}
-  <div class="box">
-    <h3>The End</h3>
-    {% if page.ending_label %}
-      <p class="muted">Ending: <strong>{{ page.ending_label }}</strong></p>
-    {% endif %}
-    <p class="muted">This ending was saved in Django (Play).</p>
+{% block content %}
+  <div class="row" style="justify-content:space-between; margin: 8px 0 12px;">
+    <a class="btn" href="{% url 'story_list' %}">← Back</a>
+    <a class="btn" href="{% url 'stats' %}">📊 Stats</a>
   </div>
-{% else %}
-  <div class="box">
-    <h3>Choices</h3>
 
-    {% if choices and choices|length > 0 %}
-      {% for c in choices %}
-        <form method="post" action="{% url 'choose' page.id %}" style="margin: 10px 0;">
-          {% csrf_token %}
-          <input type="hidden" name="next_page_id" value="{{ c.next_page_id }}">
-          <button type="submit">{{ c.text }}</button>
-        </form>
-      {% endfor %}
-    {% else %}
-      <p class="muted">No choices on this page.</p>
-    {% endif %}
+  <div class="card">
+    <p class="title" style="font-size:20px;">{{ page.text }}</p>
   </div>
-{% endif %}
 
-</body>
-</html>
+  {% if page.is_ending %}
+    <div class="card">
+      <p class="title" style="font-size:22px;">The End</p>
+      {% if page.ending_label %}
+        <p class="desc">Ending: <b style="color:#fff;">{{ page.ending_label }}</b></p>
+      {% endif %}
+      <div class="pillRow">
+        <span class="pill"><span class="dot ok"></span>Saved in Django (Play)</span>
+      </div>
+      <div class="row">
+        <a class="btn primary" href="{% url 'play_start' page.story_id %}">↻ Play again</a>
+        <a class="btn" href="{% url 'story_list' %}">All stories</a>
+      </div>
+    </div>
+  {% else %}
+    <div class="card">
+      <p class="title">Choices</p>
+
+      {% if choices and choices|length > 0 %}
+        <div class="grid">
+          {% for c in choices %}
+            <form method="post" action="{% url 'choose' page.id %}">
+              {% csrf_token %}
+              <input type="hidden" name="next_page_id" value="{{ c.next_page_id }}">
+              <button class="btn full" type="submit" style="justify-content:space-between;">
+                <span>{{ c.text }}</span>
+                <span class="muted">→</span>
+              </button>
+            </form>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="desc">No choices on this page.</p>
+      {% endif %}
+    </div>
+  {% endif %}
+{% endblock %}

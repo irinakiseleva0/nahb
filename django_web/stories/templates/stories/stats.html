@@ -1,57 +1,49 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <title>NAHB - Stats</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    body { font-family: system-ui, Arial, sans-serif; max-width: 900px; margin: 40px auto; padding: 0 16px; }
-    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
-    th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-    th { background: #f6f6f6; }
-    a { color: #0b57d0; text-decoration: none; }
-    .box { border: 1px solid #ddd; border-radius: 10px; padding: 16px; margin: 14px 0; }
-  </style>
-</head>
-<body>
-  <p><a href="{% url 'story_list' %}">← Back to stories</a></p>
+{% extends "stories/base.html" %}
+{% block title %}NAHB - Stats{% endblock %}
 
-  <h1>Statistics</h1>
-
-  <div class="box">
-    <h2>Plays per story</h2>
-    {% if plays_per_story %}
-      <table>
-        <tr><th>Story ID</th><th>Plays</th></tr>
-        {% for row in plays_per_story %}
-          <tr>
-            <td>{{ row.story_id }}</td>
-            <td>{{ row.plays }}</td>
-          </tr>
-        {% endfor %}
-      </table>
-    {% else %}
-      <p>No plays yet.</p>
-    {% endif %}
+{% block content %}
+  <div class="hero">
+    <div class="h1">Statistics</div>
+    <div class="muted">Stored in Django model: <code>Play</code></div>
+    <div class="row" style="margin-top:14px;">
+      <a class="btn" href="{% url 'story_list' %}">← Back to stories</a>
+    </div>
   </div>
 
-  <div class="box">
-    <h2>Endings reached</h2>
-    {% if endings %}
-      <table>
-        <tr><th>Story ID</th><th>Ending Page ID</th><th>Count</th></tr>
-        {% for row in endings %}
-          <tr>
-            <td>{{ row.story_id }}</td>
-            <td>{{ row.ending_page_id }}</td>
-            <td>{{ row.count }}</td>
-          </tr>
-        {% endfor %}
-      </table>
-    {% else %}
-      <p>No endings yet.</p>
-    {% endif %}
-  </div>
+  <div class="grid two">
+    <div class="card">
+      <p class="title">Plays per story</p>
+      {% if plays_per_story %}
+        <table class="table">
+          <tr><th>Story</th><th>Plays</th></tr>
+          {% for row in plays_per_story %}
+            <tr>
+              <td>#{{ row.story_id }}</td>
+              <td><b>{{ row.plays }}</b></td>
+            </tr>
+          {% endfor %}
+        </table>
+      {% else %}
+        <p class="desc">No plays yet.</p>
+      {% endif %}
+    </div>
 
-</body>
-</html>
+    <div class="card">
+      <p class="title">Endings reached</p>
+      {% if endings %}
+        <table class="table">
+          <tr><th>Story</th><th>Ending page</th><th>Count</th></tr>
+          {% for row in endings %}
+            <tr>
+              <td>#{{ row.story_id }}</td>
+              <td>#{{ row.ending_page_id }}</td>
+              <td><b>{{ row.count }}</b></td>
+            </tr>
+          {% endfor %}
+        </table>
+      {% else %}
+        <p class="desc">No endings yet.</p>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

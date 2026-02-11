@@ -1,100 +1,55 @@
-<!doctype html>
-<html lang="en">
+{% extends "stories/base.html" %}
+{% block title %}NAHB - Stories{% endblock %}
 
-<head>
-  <meta charset="utf-8" />
-  <title>NAHB - Stories</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    body {
-      font-family: system-ui, Arial, sans-serif;
-      max-width: 900px;
-      margin: 40px auto;
-      padding: 0 16px;
-    }
+{% block content %}
+  <div class="hero">
+    <div class="h1">Published stories</div>
+    <div class="muted">Loaded from Flask API: <code>/stories?status=published</code></div>
 
-    h1 {
-      margin-bottom: 12px;
-    }
+    <div class="row" style="margin-top:14px;">
+      <a class="btn primary" href="{% url 'story_create' %}">＋ Create story</a>
+      <a class="btn" href="{% url 'stats' %}">📊 View stats</a>
+    </div>
 
-    .muted {
-      color: #666;
-      margin-bottom: 24px;
-    }
-
-    .card {
-      border: 1px solid #ddd;
-      border-radius: 10px;
-      padding: 16px;
-      margin-bottom: 12px;
-    }
-
-    .title {
-      font-size: 18px;
-      font-weight: 600;
-      margin: 0 0 6px;
-    }
-
-    .desc {
-      margin: 0;
-      color: #333;
-    }
-
-    .actions {
-      margin-top: 10px;
-    }
-
-    .empty {
-      padding: 20px;
-      border: 1px dashed #bbb;
-      border-radius: 10px;
-      color: #666;
-    }
-
-    a {
-      color: #0b57d0;
-      text-decoration: none;
-    }
-  </style>
-</head>
-
-<body>
-  <h1>Published stories</h1>
-  <div class="muted">Loaded from Flask API: <code>/stories?status=published</code></div>
-
-  {% if error %}
-  <div class="empty">{{ error }}</div>
-  {% endif %}
+    {% if error %}
+      <div class="msg error" style="margin-top:14px;">{{ error }}</div>
+    {% endif %}
+  </div>
 
   {% if stories and stories|length > 0 %}
-  {% for s in stories %}
-  <div class="card">
-    <p class="title">{{ s.title }}</p>
-    <p class="desc">{{ s.description|default:"(no description)" }}</p>
-    <h1>Published stories</h1>
-<div class="muted">Loaded from Flask API: <code>/stories?status=published</code></div>
+    <div class="grid cards">
+      {% for s in stories %}
+        <div class="card">
+          <div class="cardHeader">
+            <div>
+              <p class="title">{{ s.title }}</p>
+              <p class="desc">{{ s.description|default:"(no description)" }}</p>
 
-<p>
-  <a href="{% url 'story_create' %}">＋ Create story</a> |
-  <a href="{% url 'stats' %}">📊 Stats</a>
-</p>
+              <div class="pillRow">
+                <span class="pill"><span class="dot {% if s.status == 'published' %}ok{% else %}warn{% endif %}"></span>{{ s.status }}</span>
+                <span class="pill"><span class="dot"></span>id: {{ s.id }}</span>
+                <span class="pill"><span class="dot"></span>start: {{ s.start_page_id|default:"-" }}</span>
+              </div>
+            </div>
 
+            <a class="btn primary" href="{% url 'play_start' s.id %}">▶ Play</a>
+          </div>
 
-
-
-    <div class="actions">
-      <a href="{% url 'story_edit' s.id %}">Edit</a> |
-      <a href="{% url 'story_delete' s.id %}">Delete</a> |
-      <a href="{% url 'story_builder' s.id %}">Build</a> |
-      <a href="{% url 'play_start' s.id %}">▶ Play</a>
-
-
+          <div class="row">
+            <a class="btn" href="{% url 'story_builder' s.id %}">🧱 Build</a>
+            <a class="btn" href="{% url 'story_edit' s.id %}">✏️ Edit</a>
+            <a class="btn danger" href="{% url 'story_delete' s.id %}">🗑 Delete</a>
+          </div>
+        </div>
+      {% endfor %}
     </div>
-  </div>
-  {% endfor %}
   {% else %}
-  <div class="empty">No published stories yet.</div>
+    <div class="card">
+      <p class="title">No published stories yet</p>
+      <p class="desc">Create one and start building pages + choices.</p>
+      <div class="row">
+        <a class="btn primary" href="{% url 'story_create' %}">＋ Create story</a>
+      </div>
+    </div>
   {% endif %}
-</body>
-
-</html>
+{% endblock %}

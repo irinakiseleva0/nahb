@@ -1,24 +1,119 @@
-<!doctype html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>NAHB - Story</title>
-  <style>
-    body { font-family: system-ui, Arial, sans-serif; max-width: 900px; margin: 40px auto; padding: 0 16px; }
-    label { display:block; margin-top: 12px; font-weight: 600; }
-    input, textarea, select { width:100%; padding:10px; border:1px solid #ddd; border-radius:10px; }
-    button { margin-top: 14px; padding:10px 14px; border:1px solid #ddd; border-radius:10px; background:#fff; cursor:pointer; }
-    a { color:#0b57d0; text-decoration:none; }
-  </style>
-</head>
-<body>
-  <p><a href="{% url 'story_list' %}">← Back</a></p>
-  <h1>{% if mode == "create" %}Create story{% else %}Edit story #{{ story_id }}{% endif %}</h1>
+{% extends "stories/base.html" %}
+{% block title %}NAHB - {% if mode == "edit" %}Edit story{% else %}Create story{% endif %}{% endblock %}
 
-  <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Save</button>
-  </form>
-</body>
-</html>
+{% block content %}
+  <div class="hero">
+    <div class="h1">{% if mode == "edit" %}Edit story{% else %}Create story{% endif %}</div>
+    <div class="muted">
+      {% if mode == "edit" %}
+        Update the story metadata stored in Flask.
+      {% else %}
+        Create a new story in Flask (then open Builder to add pages/choices).
+      {% endif %}
+    </div>
+
+    <div class="row" style="margin-top:14px;">
+      <a class="btn" href="{% url 'story_list' %}">← Back to stories</a>
+      {% if mode == "edit" and story_id %}
+        <a class="btn" href="{% url 'story_builder' story_id %}">🧱 Build</a>
+        <a class="btn primary" href="{% url 'play_start' story_id %}">▶ Play</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="grid two">
+    <!-- FORM CARD -->
+    <div class="card">
+      <p class="title" style="font-size:20px; margin-bottom:6px;">
+        {% if mode == "edit" %}Story details{% else %}New story{% endif %}
+      </p>
+      <p class="desc" style="margin-bottom:14px;">
+        Required: <b>title</b>. Optional: description, status, start_page_id.
+      </p>
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+          <div class="msg error">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <!-- Title -->
+        <label for="{{ form.title.id_for_label }}">Title</label>
+        {{ form.title }}
+        {% if form.title.errors %}
+          <div class="msg error">{{ form.title.errors }}</div>
+        {% else %}
+          <div class="help">Short, clear name (e.g., “Escape the Forest”).</div>
+        {% endif %}
+
+        <!-- Description -->
+        <label for="{{ form.description.id_for_label }}">Description</label>
+        {{ form.description }}
+        {% if form.description.errors %}
+          <div class="msg error">{{ form.description.errors }}</div>
+        {% else %}
+          <div class="help">One sentence to explain the story.</div>
+        {% endif %}
+
+        <div class="row">
+          <div style="flex:1; min-width:220px;">
+            <!-- Status -->
+            <label for="{{ form.status.id_for_label }}">Status</label>
+            {{ form.status }}
+            {% if form.status.errors %}
+              <div class="msg error">{{ form.status.errors }}</div>
+            {% else %}
+              <div class="help">Only <code>published</code> appears on the list.</div>
+            {% endif %}
+          </div>
+
+          <div style="flex:1; min-width:220px;">
+            <!-- Start page id -->
+            <label for="{{ form.start_page_id.id_for_label }}">Start page id</label>
+            {{ form.start_page_id }}
+            {% if form.start_page_id.errors %}
+              <div class="msg error">{{ form.start_page_id.errors }}</div>
+            {% else %}
+              <div class="help">Set this after you create pages in Builder.</div>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:16px;">
+          <button class="btn primary" type="submit">
+            {% if mode == "edit" %}Save changes{% else %}Create story{% endif %}
+          </button>
+          <a class="btn" href="{% url 'story_list' %}">Cancel</a>
+        </div>
+      </form>
+    </div>
+
+    <!-- SIDE HELP CARD -->
+    <div class="card">
+      <p class="title">Tips</p>
+
+      <div class="pillRow">
+        <span class="pill"><span class="dot ok"></span>Flow</span>
+        <span class="pill"><span class="dot"></span>Flask stores story/pages</span>
+        <span class="pill"><span class="dot"></span>Django stores plays</span>
+      </div>
+
+      <div style="margin-top:12px; color: var(--muted); font-weight:700; line-height:1.5;">
+        <ol style="margin: 8px 0 0; padding-left: 18px;">
+          <li>Create story (this page)</li>
+          <li>Open <b>Build</b> to add pages</li>
+          <li>Create a start page and note its id</li>
+          <li>Come back and set <code>start_page_id</code></li>
+          <li>Press <b>Play</b></li>
+        </ol>
+      </div>
+
+      {% if mode == "edit" and story_id %}
+        <div class="row" style="margin-top:16px;">
+          <a class="btn full" href="{% url 'story_builder' story_id %}">🧱 Go to Builder</a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

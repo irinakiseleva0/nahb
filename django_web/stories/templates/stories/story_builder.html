@@ -1,99 +1,76 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <title>NAHB - Builder</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    body { font-family: system-ui, Arial, sans-serif; max-width: 900px; margin: 40px auto; padding: 0 16px; }
-    .card { border: 1px solid #ddd; border-radius: 12px; padding: 16px; margin-bottom: 16px; }
-    .muted { color: #666; }
-    label { display:block; margin: 10px 0 6px; font-weight: 600; }
-    input[type="text"], input[type="number"], textarea, select { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #ccc; }
-    textarea { resize: vertical; }
-    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .btn { padding: 10px 14px; border: 1px solid #ccc; border-radius: 10px; background: #fff; cursor: pointer; }
-    a { color: #0b57d0; text-decoration: none; }
-    .msg { padding: 10px 12px; border-radius: 10px; margin-bottom: 10px; }
-    .success { background: #eaf7ea; border: 1px solid #bde3bd; }
-    .error { background: #fdecec; border: 1px solid #f3b1b1; }
-  </style>
-</head>
-<body>
-  <p><a href="{% url 'story_list' %}">← Back to stories</a></p>
+{% extends "stories/base.html" %}
+{% block title %}NAHB - Builder{% endblock %}
 
-  <h1>Builder: {{ story.title }}</h1>
-  <p class="muted">Story id: {{ story.id }} | status: {{ story.status }} | start_page_id: {{ story.start_page_id }}</p>
-
-  {% if messages %}
-    {% for m in messages %}
-      <div class="msg {% if m.tags %}{{ m.tags }}{% endif %}">
-        {{ m }}
-      </div>
-    {% endfor %}
-  {% endif %}
-
-  <div class="card">
-    <h2>Add page</h2>
-    <form method="post">
-      {% csrf_token %}
-      <input type="hidden" name="action" value="add_page" />
-
-      {{ page_form.non_field_errors }}
-
-      <label>Text</label>
-      {{ page_form.text }}
-
-      <label>
-        {{ page_form.is_ending }} Ending page?
-      </label>
-
-      <label>Ending label (optional)</label>
-      {{ page_form.ending_label }}
-
-      <p style="margin-top:12px;">
-        <button class="btn" type="submit">Create page</button>
-      </p>
-    </form>
+{% block content %}
+  <div class="hero">
+    <div class="h1">Builder: {{ story.title }}</div>
+    <p class="muted">Story id: {{ story.id }} | status: {{ story.status }} | start_page_id: {{ story.start_page_id }}</p>
   </div>
 
-  <div class="card">
-    <h2>Add choice</h2>
-    <p class="muted">You need: from page_id + next_page_id.</p>
-
-    <form method="post">
-      {% csrf_token %}
-      <input type="hidden" name="action" value="add_choice" />
-
-      {{ choice_form.non_field_errors }}
-
-      <div class="row">
+  <div class="grid two">
+    <div class="card">
+      <div class="cardHeader">
         <div>
-          <label>From page_id</label>
-          {{ choice_form.page_id }}
-        </div>
-        <div>
-          <label>To next_page_id</label>
-          {{ choice_form.next_page_id }}
+          <p class="title">Add page</p>
+          <p class="desc">Create a page in Flask for this story.</p>
         </div>
       </div>
 
-      <label>Choice text</label>
-      {{ choice_form.text }}
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="add_page" />
 
-      <p style="margin-top:12px;">
-        <button class="btn" type="submit">Create choice</button>
-      </p>
-    </form>
+        <label>Text</label>
+        {{ page_form.text }}
+        {% if page_form.text.errors %}<div class="help">{{ page_form.text.errors|striptags }}</div>{% endif %}
+
+        <label style="display:flex; gap:10px; align-items:center; margin-top:12px;">
+          {{ page_form.is_ending }} <span style="font-weight:900;">Ending page?</span>
+        </label>
+
+        <label>Ending label (optional)</label>
+        {{ page_form.ending_label }}
+
+        <div class="row">
+          <button class="btn primary" type="submit">Create page</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="card">
+      <div class="cardHeader">
+        <div>
+          <p class="title">Add choice</p>
+          <p class="desc">Link a page to the next page.</p>
+        </div>
+      </div>
+
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="add_choice" />
+
+        <label>From page_id</label>
+        {{ choice_form.page_id }}
+
+        <label>To next_page_id</label>
+        {{ choice_form.next_page_id }}
+
+        <label>Choice text</label>
+        {{ choice_form.text }}
+
+        <div class="row">
+          <button class="btn primary" type="submit">Create choice</button>
+        </div>
+      </form>
+    </div>
   </div>
 
-  <div class="card">
-    <h2>Next steps</h2>
-    <ul>
-      <li>Create the start page</li>
-      <li>Set <code>start_page_id</code> on the story (Edit story)</li>
-      <li>Press Play</li>
-    </ul>
+  <div class="card" style="margin-top:14px;">
+    <p class="title">Next steps</p>
+    <div class="pillRow">
+      <span class="pill"><span class="dot warn"></span> Create start page</span>
+      <span class="pill"><span class="dot warn"></span> Set start_page_id in Edit story</span>
+      <span class="pill"><span class="dot ok"></span> Press Play</span>
+    </div>
   </div>
-</body>
-</html>
+{% endblock %}
