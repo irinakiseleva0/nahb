@@ -9,6 +9,7 @@ from .forms import StoryForm
 from .forms import PageForm, ChoiceForm
 from web.flask_client import flask_get, flask_post, flask_put, flask_delete
 
+
 def story_list(request):
     try:
         stories = flask_get("/stories", params={"status": "published"})
@@ -24,6 +25,7 @@ def play_start(request, story_id: int):
     for k in list(request.session.keys()):
         if k.startswith(f"ended_{story_id}_"):
             del request.session[k]
+            request.session.modified = True
 
     try:
         data = flask_get(f"/stories/{story_id}/start")
@@ -32,16 +34,7 @@ def play_start(request, story_id: int):
 
     page = data["page"]
     choices = data.get("choices", [])
-
-    if page.get("is_ending"):
-        ending_id = page.get("id")
-        key = f"ended_{story_id}_{ending_id}"
-        if not request.session.get(key):
-            Play.objects.create(story_id=story_id, ending_page_id=ending_id)
-            request.session[key] = True
-
     return render(request, "stories/play_page.html", {"page": page, "choices": choices})
-
 
 
 def play_page(request, page_id: int):
@@ -76,7 +69,6 @@ def choose(request, page_id: int):
     return redirect("play_page", page_id=int(next_page_id))
 
 
-
 def stats(request):
     plays_per_story = (
         Play.objects.values("story_id")
@@ -91,9 +83,10 @@ def stats(request):
     )
 
     return render(request, "stories/stats.html", {
-        "plays_per_story": plays_per_story,
-        "endings": endings,
+        "plays_per_story": list(plays_per_story),
+        "endings": list(endings),
     })
+
 
 def story_create(request):
     if request.method == "POST":
@@ -157,7 +150,8 @@ def story_builder(request, story_id: int):
 
                 try:
                     created = flask_post(f"/stories/{story_id}/pages", payload)
-                    messages.success(request, f"Page created (id={created.get('id')}).")
+                    messages.success(
+                        request, f"Page created (id={created.get('id')}).")
                     return redirect("story_builder", story_id=story_id)
                 except RequestException as e:
                     messages.error(request, f"Failed to create page: {e}")
@@ -169,7 +163,8 @@ def story_builder(request, story_id: int):
                 page_id = payload.pop("page_id")
                 try:
                     created = flask_post(f"/pages/{page_id}/choices", payload)
-                    messages.success(request, f"Choice created (id={created.get('id')}).")
+                    messages.success(
+                        request, f"Choice created (id={created.get('id')}).")
                     return redirect("story_builder", story_id=story_id)
                 except RequestException as e:
                     messages.error(request, f"Failed to create choice: {e}")
@@ -186,4 +181,3 @@ def story_builder(request, story_id: int):
             "choice_form": choice_form,
         },
     )
-
