@@ -439,25 +439,19 @@
                 <a href="{% url 'story_create' %}">Create</a>
             </div>
         </div>
-
-        {% if messages %}
-        {% for m in messages %}
-        <div class="msg {% if m.tags %}{{ m.tags }}{% endif %}">{{ m }}</div>
-        {% endfor %}
-        {% endif %}
-
-        {% block content %}
-        {% if messages %}
-  <div class="toastWrap">
-    {% for m in messages %}
-      <div class="toast {% if m.tags %}{{ m.tags }}{% else %}info{% endif %}">
-        <div class="icon"></div>
-        <div class="text">{{ m }}</div>
-      </div>
-    {% endfor %}
-  </div>
+{% if messages %}
+<div class="toastWrap">
+  {% for m in messages %}
+    <div class="toast {% if m.tags %}{{ m.tags }}{% else %}info{% endif %}">
+      <div class="icon"></div>
+      <div class="text">{{ m }}</div>
+    </div>
+  {% endfor %}
+</div>
 {% endif %}
-{% endblock %}
+
+{% block content %}{% endblock %}
+
     </div>
 </body>
 
