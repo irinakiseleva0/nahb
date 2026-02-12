@@ -1,6 +1,38 @@
 from django.conf import settings
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.conf import settings
+from django.db import models
+
+class PlaySession(models.Model):
+    # Django session key for anonymous autosave
+    session_key = models.CharField(max_length=64, db_index=True)
+
+    # Optional: if user logged-in, can also link
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="play_sessions",
+    )
+
+    story_id = models.IntegerField(db_index=True)
+    current_page_id = models.IntegerField()
+
+    started_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["session_key", "story_id"],
+                name="uniq_session_story_progress",
+            )
+        ]
+
+    def __str__(self):
+        return f"PlaySession(session={self.session_key}, story={self.story_id}, page={self.current_page_id})"
 
 #Link Flask story -> Django owner (Author).
 #Used for Level 16 permissions: authors can edit/delete only their own stories.

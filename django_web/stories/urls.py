@@ -1,15 +1,26 @@
 from django.urls import path
 from . import views
+from .models import Play, PlaySession
+def _get_session_key(request):
+    # ensures session exists
+    if not request.session.session_key:
+        request.session.save()
+    return request.session.session_key
+
 
 urlpatterns = [
     path("", views.story_list, name="story_list"),
+
     path("play/<int:story_id>/", views.play_start, name="play_start"),
+    path("play/<int:story_id>/resume/", views.play_resume, name="play_resume"),
+    path("play/<int:story_id>/reset/", views.play_reset, name="play_reset"),
+
     path("page/<int:page_id>/", views.play_page, name="play_page"),
     path("choose/<int:page_id>/", views.choose, name="choose"),
+
     path("stats/", views.stats, name="stats"),
     path("new/", views.story_create, name="story_create"),
     path("<int:story_id>/edit/", views.story_edit, name="story_edit"),
     path("<int:story_id>/delete/", views.story_delete, name="story_delete"),
     path("<int:story_id>/builder/", views.story_builder, name="story_builder"),
-
 ]
