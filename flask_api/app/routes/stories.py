@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify, abort
 
 from app.extensions import db
 from app.models import Story, Page
+from app.security import require_api_key
 
 bp = Blueprint("stories", __name__, url_prefix="/stories")
 
@@ -41,6 +42,8 @@ def get_start_page(story_id):
 
 @bp.post("")
 def create_story():
+    r = require_api_key()
+    if r: return r
     data = request.get_json(force=True)
 
     story = Story(
@@ -77,6 +80,7 @@ def delete_story(story_id):
     return "", 204
 
 
+
 @bp.post("/<int:story_id>/pages")
 def create_page(story_id):
     Story.query.get_or_404(story_id)
@@ -93,3 +97,4 @@ def create_page(story_id):
     db.session.commit()
 
     return jsonify(page.to_dict()), 201
+
