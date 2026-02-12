@@ -8,6 +8,8 @@ from .models import Play
 from .forms import StoryForm
 from .forms import PageForm, ChoiceForm
 from web.flask_client import flask_get, flask_post, flask_put, flask_delete
+from django.contrib.auth.decorators import login_required
+from .permissions import author_required
 
 
 def story_list(request):
@@ -87,7 +89,7 @@ def stats(request):
         "endings": list(endings),
     })
 
-
+@author_required
 def story_create(request):
     if request.method == "POST":
         form = StoryForm(request.POST)
@@ -99,7 +101,7 @@ def story_create(request):
         form = StoryForm(initial={"status": "published"})
     return render(request, "stories/story_form.html", {"form": form, "mode": "create"})
 
-
+@author_required
 def story_edit(request, story_id: int):
     if request.method == "POST":
         form = StoryForm(request.POST)
@@ -117,7 +119,7 @@ def story_edit(request, story_id: int):
         })
     return render(request, "stories/story_form.html", {"form": form, "mode": "edit", "story_id": story_id})
 
-
+@author_required
 def story_delete(request, story_id: int):
     if request.method == "POST":
         flask_delete(f"/stories/{story_id}")
@@ -127,7 +129,7 @@ def story_delete(request, story_id: int):
     s = flask_get(f"/stories/{story_id}")
     return render(request, "stories/story_delete.html", {"story": s})
 
-
+@author_required
 def story_builder(request, story_id: int):
     try:
         story = flask_get(f"/stories/{story_id}")

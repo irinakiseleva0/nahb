@@ -27,7 +27,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-
+FLASK_API_KEY = "dev-key"
 # Application definition
 
 INSTALLED_APPS = [

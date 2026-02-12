@@ -1,32 +1,30 @@
 import requests
 from django.conf import settings
 
+BASE = settings.FLASK_API_BASE_URL.rstrip("/")
 
-def _url(path: str) -> str:
-    base = settings.FLASK_API_BASE_URL.rstrip("/")
-    path = path if path.startswith("/") else f"/{path}"
-    return base + path
+def _headers(is_write: bool = False):
+    h = {"Content-Type": "application/json"}
+    if is_write:
+        h["X-API-KEY"] = settings.FLASK_API_KEY
+    return h
 
+def flask_get(path, params=None):
+    r = requests.get(f"{BASE}{path}", params=params, headers=_headers(False))
+    r.raise_for_status()
+    return r.json()
 
-def flask_get(path: str, params=None):
-    resp = requests.get(_url(path), params=params, timeout=5)
-    resp.raise_for_status()
-    return resp.json()
+def flask_post(path, data):
+    r = requests.post(f"{BASE}{path}", json=data, headers=_headers(True))
+    r.raise_for_status()
+    return r.json()
 
+def flask_put(path, data):
+    r = requests.put(f"{BASE}{path}", json=data, headers=_headers(True))
+    r.raise_for_status()
+    return r.json()
 
-def flask_post(path: str, payload: dict):
-    resp = requests.post(_url(path), json=payload, timeout=5)
-    resp.raise_for_status()
-    return resp.json()
-
-
-def flask_put(path: str, payload: dict):
-    resp = requests.put(_url(path), json=payload, timeout=5)
-    resp.raise_for_status()
-    return resp.json()
-
-
-def flask_delete(path: str):
-    resp = requests.delete(_url(path), timeout=5)
-    resp.raise_for_status()
-    return resp.json() if resp.content else None
+def flask_delete(path):
+    r = requests.delete(f"{BASE}{path}", headers=_headers(True))
+    r.raise_for_status()
+    return r.json()
