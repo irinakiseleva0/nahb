@@ -27,7 +27,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-FLASK_API_KEY = "dev-key"
 # Application definition
 
 INSTALLED_APPS = [
@@ -117,6 +116,7 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 FLASK_API_BASE_URL = "http://127.0.0.1:5001"
+FLASK_API_KEY = "dev-key"
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
