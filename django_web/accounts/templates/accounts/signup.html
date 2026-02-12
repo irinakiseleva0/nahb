@@ -1,0 +1,30 @@
+{% extends "stories/base.html" %}
+{% block title %}Sign up{% endblock %}
+
+{% block content %}
+  <div class="hero">
+    <div class="h1">Create account</div>
+    <p class="muted">Reader by default.</p>
+  </div>
+
+  <div class="card">
+    <form method="post">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+
+      <label>Username</label>
+      {{ form.username }}
+
+      <label>Password</label>
+      {{ form.password1 }}
+
+      <label>Repeat password</label>
+      {{ form.password2 }}
+
+      <div class="row">
+        <button class="btn primary" type="submit">Create</button>
+        <a class="btn" href="{% url 'login' %}">Login</a>
+      </div>
+    </form>
+  </div>
+{% endblock %}

@@ -125,6 +125,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
 
     "stories",
+    "accounts",
 ]
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",

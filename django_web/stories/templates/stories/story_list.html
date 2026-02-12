@@ -11,6 +11,21 @@
       <a class="btn" href="{% url 'stats' %}">📊 View stats</a>
     </div>
 
+    <!-- Level 13: Search -->
+    <form method="get" style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+      <input
+        name="q"
+        placeholder="Search by title..."
+        value="{{ request.GET.q }}"
+        style="flex:1; min-width:220px;"
+      />
+      <button class="btn" type="submit">Search</button>
+
+      {% if request.GET.q %}
+        <a class="btn" href="{% url 'story_list' %}">Clear</a>
+      {% endif %}
+    </form>
+
     {% if error %}
       <div class="msg error" style="margin-top:14px;">{{ error }}</div>
     {% endif %}
@@ -26,7 +41,10 @@
               <p class="desc">{{ s.description|default:"(no description)" }}</p>
 
               <div class="pillRow">
-                <span class="pill"><span class="dot {% if s.status == 'published' %}ok{% else %}warn{% endif %}"></span>{{ s.status }}</span>
+                <span class="pill">
+                  <span class="dot {% if s.status == 'published' %}ok{% elif s.status == 'suspended' %}danger{% else %}warn{% endif %}"></span>
+                  {{ s.status }}
+                </span>
                 <span class="pill"><span class="dot"></span>id: {{ s.id }}</span>
                 <span class="pill"><span class="dot"></span>start: {{ s.start_page_id|default:"-" }}</span>
               </div>
@@ -45,11 +63,19 @@
     </div>
   {% else %}
     <div class="card">
-      <p class="title">No published stories yet</p>
-      <p class="desc">Create one and start building pages + choices.</p>
-      <div class="row">
-        <a class="btn primary" href="{% url 'story_create' %}">＋ Create story</a>
-      </div>
+      {% if request.GET.q %}
+        <p class="title">No results</p>
+        <p class="desc">Nothing matched “{{ request.GET.q }}”. Try another keyword.</p>
+        <div class="row">
+          <a class="btn" href="{% url 'story_list' %}">Clear search</a>
+        </div>
+      {% else %}
+        <p class="title">No published stories yet</p>
+        <p class="desc">Create one and start building pages + choices.</p>
+        <div class="row">
+          <a class="btn primary" href="{% url 'story_create' %}">＋ Create story</a>
+        </div>
+      {% endif %}
     </div>
   {% endif %}
 {% endblock %}
