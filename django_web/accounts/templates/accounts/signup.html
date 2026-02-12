@@ -2,29 +2,34 @@
 {% block title %}Sign up{% endblock %}
 
 {% block content %}
-  <div class="hero">
-    <div class="h1">Create account</div>
-    <p class="muted">Reader by default.</p>
-  </div>
+<div class="hero">
+  <div class="h1">Create account</div>
+  <p class="muted">Register to create stories and track your plays.</p>
+</div>
 
-  <div class="card">
-    <form method="post">
-      {% csrf_token %}
-      {{ form.non_field_errors }}
+<div class="card" style="max-width:640px;">
+  <form method="post">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
 
-      <label>Username</label>
-      {{ form.username }}
+    <label>Username</label>
+    {{ form.username }}
+    <div class="help">{{ form.username.help_text }}</div>
+    {{ form.username.errors }}
 
-      <label>Password</label>
-      {{ form.password1 }}
+    <label>Password</label>
+    {{ form.password1 }}
+    <div class="help">{{ form.password1.help_text }}</div>
+    {{ form.password1.errors }}
 
-      <label>Repeat password</label>
-      {{ form.password2 }}
+    <label>Confirm password</label>
+    {{ form.password2 }}
+    {{ form.password2.errors }}
 
-      <div class="row">
-        <button class="btn primary" type="submit">Create</button>
-        <a class="btn" href="{% url 'login' %}">Login</a>
-      </div>
-    </form>
-  </div>
+    <div class="row" style="margin-top:14px;">
+      <button class="btn primary" type="submit">Sign up</button>
+      <a class="btn" href="{% url 'login' %}">I already have an account</a>
+    </div>
+  </form>
+</div>
 {% endblock %}
