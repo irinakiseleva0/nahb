@@ -1,0 +1,61 @@
+{% extends "stories/base.html" %}
+{% block title %}Reports (Admin){% endblock %}
+
+{% block content %}
+<div class="hero">
+  <div class="h1">Reports (Admin)</div>
+  <p class="muted">Staff-only moderation panel</p>
+
+  <div class="row" style="margin-top:14px;">
+    <a class="btn {% if status == 'open' %}primary{% endif %}" href="{% url 'reports_admin' %}?status=open">Open</a>
+    <a class="btn {% if status == 'resolved' %}primary{% endif %}" href="{% url 'reports_admin' %}?status=resolved">Resolved</a>
+    <a class="btn {% if status == 'all' %}primary{% endif %}" href="{% url 'reports_admin' %}?status=all">All</a>
+  </div>
+</div>
+
+{% if reports %}
+  <div class="grid">
+    {% for r in reports %}
+      <div class="card">
+        <div class="cardHeader">
+          <div>
+            <p class="title">Report #{{ r.id }} — Story #{{ r.story_id }}</p>
+            <p class="desc">
+              <b>Reason:</b> {{ r.get_reason_display }} •
+              <b>By:</b> {{ r.user.username }} •
+              <b>Created:</b> {{ r.created_at }}
+            </p>
+
+            <div class="msg" style="margin-top:12px;">
+              {{ r.message }}
+            </div>
+
+            {% if r.is_resolved %}
+              <p class="muted" style="margin-top:10px;">
+                Resolved by {{ r.resolved_by.username|default:"(unknown)" }}
+                {% if r.resolved_at %}at {{ r.resolved_at }}{% endif %}
+              </p>
+            {% endif %}
+          </div>
+
+          <div>
+            {% if not r.is_resolved %}
+              <form method="post" action="{% url 'report_resolve' r.id %}">
+                {% csrf_token %}
+                <button class="btn primary" type="submit">Resolve</button>
+              </form>
+            {% else %}
+              <span class="pill"><span class="dot ok"></span>Resolved</span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="card">
+    <p class="title">No reports</p>
+    <p class="desc">Nothing to show for this filter.</p>
+  </div>
+{% endif %}
+{% endblock %}

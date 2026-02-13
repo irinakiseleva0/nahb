@@ -12,6 +12,9 @@ from .permissions import author_required
 from .utils import get_session_key
 from .models import StoryRating, StoryReport
 
+from django.utils import timezone
+from django.contrib.auth.decorators import user_passes_test
+from .models import StoryReport
 
 
 def require_story_owner(request, story_id: int):
@@ -316,3 +319,35 @@ def report_story(request, story_id: int):
         form = ReportForm()
 
     return render(request, "stories/report_form.html", {"form": form, "story_id": story_id})
+
+staff_required = user_passes_test(lambda u: u.is_active and u.is_staff)
+
+@login_required
+@staff_required
+def reports_admin(request):
+    status = request.GET.get("status", "open")  # open / resolved / all
+
+    qs = StoryReport.objects.select_related("user", "resolved_by").order_by("-created_at")
+
+    if status == "open":
+        qs = qs.filter(is_resolved=False)
+    elif status == "resolved":
+        qs = qs.filter(is_resolved=True)
+
+    return render(request, "stories/reports_admin.html", {"reports": qs, "status": status})
+
+
+@login_required
+@staff_required
+def report_resolve(request, report_id: int):
+    if request.method != "POST":
+        return redirect("reports_admin")
+
+    r = get_object_or_404(StoryReport, id=report_id)
+    r.is_resolved = True
+    r.resolved_by = request.user
+    r.resolved_at = timezone.now()
+    r.save(update_fields=["is_resolved", "resolved_by", "resolved_at"])
+
+    messages.success(request, f"Report #{r.id} resolved.")
+    return redirect("reports_admin")

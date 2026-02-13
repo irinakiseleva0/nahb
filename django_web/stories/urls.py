@@ -19,4 +19,8 @@ urlpatterns = [
     path("<int:story_id>/edit/", views.story_edit, name="story_edit"),
     path("<int:story_id>/delete/", views.story_delete, name="story_delete"),
     path("<int:story_id>/builder/", views.story_builder, name="story_builder"),
+    path("reports/", views.reports_admin, name="reports_admin"),
+    path("reports/<int:report_id>/resolve/",
+         views.report_resolve, name="report_resolve"),
+
 ]
