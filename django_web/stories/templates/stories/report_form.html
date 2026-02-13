@@ -1,0 +1,29 @@
+{% extends "stories/base.html" %}
+{% block title %}Report story{% endblock %}
+
+{% block content %}
+<div class="hero">
+  <div class="h1">Report story #{{ story_id }}</div>
+  <p class="muted">Tell us what’s wrong. Admin can review later.</p>
+</div>
+
+<div class="card">
+  <form method="post">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+
+    <label>Reason</label>
+    {{ form.reason }}
+    {{ form.reason.errors }}
+
+    <label>Message</label>
+    {{ form.message }}
+    {{ form.message.errors }}
+
+    <div class="row" style="margin-top:14px;">
+      <button class="btn danger" type="submit">Submit report</button>
+      <a class="btn" href="{% url 'story_list' %}">Back</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -10,7 +10,8 @@ from .forms import StoryForm, PageForm, ChoiceForm, RatingForm, ReportForm
 from web.flask_client import flask_get, flask_post, flask_put, flask_delete
 from .permissions import author_required
 from .utils import get_session_key
-from .models import Rating, Report
+from .models import StoryRating, StoryReport
+
 
 
 def require_story_owner(request, story_id: int):
@@ -283,8 +284,7 @@ def play_resume(request, story_id: int):
 
 @login_required
 def rate_story(request, story_id: int):
-    rating = Rating.objects.filter(
-        user=request.user, story_id=story_id).first()
+    rating = StoryRating.objects.filter(user=request.user, story_id=story_id).first()
 
     if request.method == "POST":
         form = RatingForm(request.POST, instance=rating)

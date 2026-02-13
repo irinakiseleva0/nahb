@@ -2,80 +2,81 @@
 {% block title %}NAHB - Stories{% endblock %}
 
 {% block content %}
-  <div class="hero">
-    <div class="h1">Published stories</div>
-    <div class="muted">Loaded from Flask API: <code>/stories?status=published</code></div>
+<div class="hero">
+  <div class="h1">Published stories</div>
+  <div class="muted">Loaded from Flask API: <code>/stories?status=published</code></div>
 
-    <div class="row" style="margin-top:14px;">
-      <a class="btn primary" href="{% url 'story_create' %}">＋ Create story</a>
-      <a class="btn" href="{% url 'stats' %}">📊 View stats</a>
-    </div>
-
-    <!-- Level 13: Search -->
-    <form method="get" style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
-      <input
-        name="q"
-        placeholder="Search by title..."
-        value="{{ request.GET.q }}"
-        style="flex:1; min-width:220px;"
-      />
-      <button class="btn" type="submit">Search</button>
-
-      {% if request.GET.q %}
-        <a class="btn" href="{% url 'story_list' %}">Clear</a>
-      {% endif %}
-    </form>
-
-    {% if error %}
-      <div class="msg error" style="margin-top:14px;">{{ error }}</div>
-    {% endif %}
+  <div class="row" style="margin-top:14px;">
+    <a class="btn primary" href="{% url 'story_create' %}">＋ Create story</a>
+    <a class="btn" href="{% url 'stats' %}">📊 View stats</a>
   </div>
 
-  {% if stories and stories|length > 0 %}
-    <div class="grid cards">
-      {% for s in stories %}
-        <div class="card">
-          <div class="cardHeader">
-            <div>
-              <p class="title">{{ s.title }}</p>
-              <p class="desc">{{ s.description|default:"(no description)" }}</p>
+  <form method="get" style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+    <input name="q" placeholder="Search by title..." value="{{ request.GET.q }}" style="flex:1; min-width:220px;" />
+    <button class="btn" type="submit">Search</button>
+    {% if request.GET.q %}
+    <a class="btn" href="{% url 'story_list' %}">Clear</a>
+    {% endif %}
+  </form>
 
-              <div class="pillRow">
-                <span class="pill">
-                  <span class="dot {% if s.status == 'published' %}ok{% elif s.status == 'suspended' %}danger{% else %}warn{% endif %}"></span>
-                  {{ s.status }}
-                </span>
-                <span class="pill"><span class="dot"></span>id: {{ s.id }}</span>
-                <span class="pill"><span class="dot"></span>start: {{ s.start_page_id|default:"-" }}</span>
-              </div>
-            </div>
-
-            <a class="btn primary" href="{% url 'play_start' s.id %}">▶ Play</a>
-          </div>
-
-          <div class="row">
-            <a class="btn" href="{% url 'story_builder' s.id %}">🧱 Build</a>
-            <a class="btn" href="{% url 'story_edit' s.id %}">✏️ Edit</a>
-            <a class="btn danger" href="{% url 'story_delete' s.id %}">🗑 Delete</a>
-          </div>
-        </div>
-      {% endfor %}
-    </div>
-  {% else %}
-    <div class="card">
-      {% if request.GET.q %}
-        <p class="title">No results</p>
-        <p class="desc">Nothing matched “{{ request.GET.q }}”. Try another keyword.</p>
-        <div class="row">
-          <a class="btn" href="{% url 'story_list' %}">Clear search</a>
-        </div>
-      {% else %}
-        <p class="title">No published stories yet</p>
-        <p class="desc">Create one and start building pages + choices.</p>
-        <div class="row">
-          <a class="btn primary" href="{% url 'story_create' %}">＋ Create story</a>
-        </div>
-      {% endif %}
-    </div>
+  {% if error %}
+  <div class="msg error" style="margin-top:14px;">{{ error }}</div>
   {% endif %}
+</div>
+
+{% if stories and stories|length > 0 %}
+<div class="grid cards">
+  {% for s in stories %}
+  <div class="card">
+    <div class="cardHeader">
+      <div>
+        <p class="title">{{ s.title }}</p>
+        <p class="desc">{{ s.description|default:"(no description)" }}</p>
+
+        <div class="pillRow">
+          <span class="pill">
+            <span
+              class="dot {% if s.status == 'published' %}ok{% elif s.status == 'suspended' %}danger{% else %}warn{% endif %}"></span>
+            {{ s.status }}
+          </span>
+          <span class="pill"><span class="dot"></span>id: {{ s.id }}</span>
+          <span class="pill"><span class="dot"></span>start: {{ s.start_page_id|default:"-" }}</span>
+        </div>
+      </div>
+      <a class="btn primary" href="{% url 'play_start' s.id %}">▶ Play</a>
+    </div>
+
+    <div class="row">
+      <a class="btn" href="{% url 'story_builder' s.id %}">🧱 Build</a>
+      <a class="btn" href="{% url 'story_edit' s.id %}">✏️ Edit</a>
+      <a class="btn danger" href="{% url 'story_delete' s.id %}">🗑 Delete</a>
+
+      {% if user.is_authenticated %}
+      <a class="btn" href="{% url 'rate_story' s.id %}">Rate</a>
+      <a class="btn" href="{% url 'report_story' s.id %}">Report</a>
+      {% else %}
+      <span class="muted">Login to rate/report</span>
+      {% endif %}
+
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="card">
+  {% if request.GET.q %}
+  <p class="title">No results</p>
+  <p class="desc">Nothing matched “{{ request.GET.q }}”. Try another keyword.</p>
+  <div class="row">
+    <a class="btn" href="{% url 'story_list' %}">Clear search</a>
+  </div>
+  {% else %}
+  <p class="title">No published stories yet</p>
+  <p class="desc">Create one and start building pages + choices.</p>
+  <div class="row">
+    <a class="btn primary" href="{% url 'story_create' %}">＋ Create story</a>
+  </div>
+  {% endif %}
+</div>
+{% endif %}
 {% endblock %}

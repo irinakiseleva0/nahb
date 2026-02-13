@@ -1,0 +1,29 @@
+{% extends "stories/base.html" %}
+{% block title %}Rate story{% endblock %}
+
+{% block content %}
+<div class="hero">
+  <div class="h1">Rate story #{{ story_id }}</div>
+  <p class="muted">1–5 stars + optional comment</p>
+</div>
+
+<div class="card">
+  <form method="post">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+
+    <label>Rating (1-5)</label>
+    {{ form.rating }}
+    {{ form.rating.errors }}
+
+    <label>Comment</label>
+    {{ form.comment }}
+    {{ form.comment.errors }}
+
+    <div class="row" style="margin-top:14px;">
+      <button class="btn primary" type="submit">Save</button>
+      <a class="btn" href="{% url 'story_list' %}">Back</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

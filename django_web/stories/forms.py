@@ -2,7 +2,27 @@ from django import forms
 from django import forms
 from django.core.validators import MinValueValidator, MaxValueValidator
 
-from .models import Rating, Report
+from .models import StoryRating, StoryReport
+
+
+class RatingForm(forms.ModelForm):
+    class Meta:
+        model = StoryRating
+        fields = ["rating", "comment"]
+        widgets = {
+            "rating": forms.NumberInput(attrs={"min": 1, "max": 5}),
+            "comment": forms.Textarea(attrs={"rows": 3, "placeholder": "Optional comment..."}),
+        }
+
+
+class ReportForm(forms.ModelForm):
+    class Meta:
+        model = StoryReport
+        fields = ["reason", "message"]
+        widgets = {
+            "reason": forms.Select(),
+            "message": forms.Textarea(attrs={"rows": 4, "placeholder": "Describe the problem..."}),
+        }
 
 STATUS_CHOICES = [
     ("draft", "draft"),
@@ -29,22 +49,3 @@ class ChoiceForm(forms.Form):
     page_id = forms.IntegerField(help_text="From which page?")
     text = forms.CharField(max_length=200)
     next_page_id = forms.IntegerField(help_text="To which page?")
-
-
-class RatingForm(forms.ModelForm):
-    class Meta:
-        model = Rating
-        fields = ["stars", "comment"]
-        widgets = {
-            "stars": forms.NumberInput(attrs={"min": 1, "max": 5}),
-            "comment": forms.Textarea(attrs={"rows": 3, "placeholder": "Optional comment..."}),
-        }
-
-
-class ReportForm(forms.ModelForm):
-    class Meta:
-        model = Report
-        fields = ["reason"]
-        widgets = {
-            "reason": forms.Textarea(attrs={"rows": 4, "placeholder": "Describe the problem..."}),
-        }
