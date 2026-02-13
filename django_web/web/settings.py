@@ -124,10 +124,10 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-
     "stories",
     "accounts.apps.AccountsConfig",
 ]
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -138,3 +138,6 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
+LOGIN_REDIRECT_URL = "/stories/"
+LOGOUT_REDIRECT_URL = "/stories/"
+LOGIN_URL = "/accounts/login/"

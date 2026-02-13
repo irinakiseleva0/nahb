@@ -3,6 +3,7 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.shortcuts import render, redirect
 from django.contrib import messages
 
+
 def login_view(request):
     if request.user.is_authenticated:
         return redirect("story_list")
@@ -14,9 +15,13 @@ def login_view(request):
 
     return render(request, "accounts/login.html", {"form": form})
 
+
 def logout_view(request):
-    logout(request)
+    if request.method == "POST":
+        logout(request)
+        return redirect("story_list")
     return redirect("story_list")
+
 
 def register_view(request):
     if request.user.is_authenticated:
