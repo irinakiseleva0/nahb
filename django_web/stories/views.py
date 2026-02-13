@@ -6,10 +6,11 @@ from django.contrib.auth.decorators import login_required
 from requests.exceptions import RequestException
 
 from .models import Play, PlaySession, StoryOwnership
-from .forms import StoryForm, PageForm, ChoiceForm
+from .forms import StoryForm, PageForm, ChoiceForm, RatingForm, ReportForm
 from web.flask_client import flask_get, flask_post, flask_put, flask_delete
 from .permissions import author_required
 from .utils import get_session_key
+from .models import Rating, Report
 
 
 def require_story_owner(request, story_id: int):
@@ -30,8 +31,10 @@ def story_list(request):
 
     session_key = get_session_key(request)
 
-    story_ids = [s.get("id") for s in stories if isinstance(s, dict) and s.get("id")]
-    sessions = PlaySession.objects.filter(session_key=session_key, story_id__in=story_ids)
+    story_ids = [s.get("id")
+                 for s in stories if isinstance(s, dict) and s.get("id")]
+    sessions = PlaySession.objects.filter(
+        session_key=session_key, story_id__in=story_ids)
 
     resume_map = {ps.story_id: ps.current_page_id for ps in sessions}
 
@@ -49,8 +52,10 @@ def stats(request):
     if not request.user.is_staff:
         qs = qs.filter(user=request.user)
 
-    plays_per_story = qs.values("story_id").annotate(plays=Count("id")).order_by("-plays")
-    endings = qs.values("story_id", "ending_page_id").annotate(count=Count("id")).order_by("story_id", "-count")
+    plays_per_story = qs.values("story_id").annotate(
+        plays=Count("id")).order_by("-plays")
+    endings = qs.values("story_id", "ending_page_id").annotate(
+        count=Count("id")).order_by("story_id", "-count")
 
     return render(
         request,
@@ -66,7 +71,8 @@ def play_start(request, story_id: int):
 
     # Resume mode: /stories/<id>/play?resume=1
     if request.GET.get("resume") == "1":
-        ps = PlaySession.objects.filter(session_key=session_key, story_id=story_id).first()
+        ps = PlaySession.objects.filter(
+            session_key=session_key, story_id=story_id).first()
         if ps:
             return redirect("play_page", page_id=ps.current_page_id)
 
@@ -78,7 +84,8 @@ def play_start(request, story_id: int):
     try:
         data = flask_get(f"/stories/{story_id}/start")
     except RequestException:
-        messages.error(request, "This story has no start page yet. Open Build and create a start page.")
+        messages.error(
+            request, "This story has no start page yet. Open Build and create a start page.")
         return redirect("story_builder", story_id=story_id)
 
     page = data["page"]
@@ -122,11 +129,13 @@ def play_page(request, page_id: int):
         ending_id = page.get("id")
         key = f"ended_{story_id}_{ending_id}"
         if not request.session.get(key):
-            Play.objects.create(user=request.user, story_id=story_id, ending_page_id=ending_id)
+            Play.objects.create(user=request.user,
+                                story_id=story_id, ending_page_id=ending_id)
             request.session[key] = True
 
             # optional: clear autosave when finished
-            PlaySession.objects.filter(session_key=session_key, story_id=story_id).delete()
+            PlaySession.objects.filter(
+                session_key=session_key, story_id=story_id).delete()
 
     return render(request, "stories/play_page.html", {"page": page, "choices": choices})
 
@@ -146,7 +155,8 @@ def choose(request, page_id: int):
 @login_required
 def play_reset(request, story_id: int):
     session_key = get_session_key(request)
-    PlaySession.objects.filter(session_key=session_key, story_id=story_id).delete()
+    PlaySession.objects.filter(
+        session_key=session_key, story_id=story_id).delete()
 
     for k in list(request.session.keys()):
         if k.startswith(f"ended_{story_id}_"):
@@ -165,7 +175,8 @@ def story_create(request):
         if form.is_valid():
             created = flask_post("/stories", form.cleaned_data)
 
-            StoryOwnership.objects.create(story_id=created["id"], owner=request.user)
+            StoryOwnership.objects.create(
+                story_id=created["id"], owner=request.user)
 
             messages.success(request, "Story created in Flask.")
             return redirect("story_list")
@@ -233,7 +244,8 @@ def story_builder(request, story_id: int):
                     payload.pop("ending_label", None)
 
                 created = flask_post(f"/stories/{story_id}/pages", payload)
-                messages.success(request, f"Page created (id={created.get('id')}).")
+                messages.success(
+                    request, f"Page created (id={created.get('id')}).")
                 return redirect("story_builder", story_id=story_id)
 
         elif action == "add_choice":
@@ -243,7 +255,8 @@ def story_builder(request, story_id: int):
                 page_id = payload.pop("page_id")
 
                 created = flask_post(f"/pages/{page_id}/choices", payload)
-                messages.success(request, f"Choice created (id={created.get('id')}).")
+                messages.success(
+                    request, f"Choice created (id={created.get('id')}).")
                 return redirect("story_builder", story_id=story_id)
 
         else:
@@ -254,12 +267,52 @@ def story_builder(request, story_id: int):
         "stories/story_builder.html",
         {"story": story, "page_form": page_form, "choice_form": choice_form},
     )
+
+
 @login_required
 def play_resume(request, story_id: int):
     session_key = get_session_key(request)
-    ps = PlaySession.objects.filter(session_key=session_key, story_id=story_id).first()
+    ps = PlaySession.objects.filter(
+        session_key=session_key, story_id=story_id).first()
     if not ps:
-        messages.info(request, "No saved progress for this story. Starting from the beginning.")
+        messages.info(
+            request, "No saved progress for this story. Starting from the beginning.")
         return redirect("play_start", story_id=story_id)
     return redirect("play_page", page_id=ps.current_page_id)
 
+
+@login_required
+def rate_story(request, story_id: int):
+    rating = Rating.objects.filter(
+        user=request.user, story_id=story_id).first()
+
+    if request.method == "POST":
+        form = RatingForm(request.POST, instance=rating)
+        if form.is_valid():
+            obj = form.save(commit=False)
+            obj.user = request.user
+            obj.story_id = story_id
+            obj.save()
+            messages.success(request, "Rating saved.")
+            return redirect("story_list")
+    else:
+        form = RatingForm(instance=rating)
+
+    return render(request, "stories/rate_form.html", {"form": form, "story_id": story_id})
+
+
+@login_required
+def report_story(request, story_id: int):
+    if request.method == "POST":
+        form = ReportForm(request.POST)
+        if form.is_valid():
+            obj = form.save(commit=False)
+            obj.user = request.user
+            obj.story_id = story_id
+            obj.save()
+            messages.success(request, "Report submitted. Thank you.")
+            return redirect("story_list")
+    else:
+        form = ReportForm()
+
+    return render(request, "stories/report_form.html", {"form": form, "story_id": story_id})

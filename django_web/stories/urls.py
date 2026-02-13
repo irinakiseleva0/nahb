@@ -9,6 +9,9 @@ urlpatterns = [
     path("play/<int:story_id>/reset/", views.play_reset, name="play_reset"),
 
     path("page/<int:page_id>/", views.play_page, name="play_page"),
+    path("<int:story_id>/rate/", views.rate_story, name="rate_story"),
+    path("<int:story_id>/report/", views.report_story, name="report_story"),
+
     path("choose/<int:page_id>/", views.choose, name="choose"),
 
     path("stats/", views.stats, name="stats"),
