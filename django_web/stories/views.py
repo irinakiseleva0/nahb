@@ -9,13 +9,7 @@ from .models import Play, PlaySession, StoryOwnership
 from .forms import StoryForm, PageForm, ChoiceForm
 from web.flask_client import flask_get, flask_post, flask_put, flask_delete
 from .permissions import author_required
-
-
-def _get_session_key(request):
-    # ensures we always have a session id for autosave (anonymous + logged-in)
-    if not request.session.session_key:
-        request.session.save()
-    return request.session.session_key
+from .utils import get_session_key
 
 
 def require_story_owner(request, story_id: int):
@@ -34,7 +28,7 @@ def story_list(request):
         stories = []
         error = f"Flask API error: {e}"
 
-    session_key = _get_session_key(request)
+    session_key = get_session_key(request)
 
     story_ids = [s.get("id") for s in stories if isinstance(s, dict) and s.get("id")]
     sessions = PlaySession.objects.filter(session_key=session_key, story_id__in=story_ids)
@@ -68,7 +62,7 @@ def stats(request):
 # Gameplay (Level 16: login required + autosave Level 13)
 @login_required
 def play_start(request, story_id: int):
-    session_key = _get_session_key(request)
+    session_key = get_session_key(request)
 
     # Resume mode: /stories/<id>/play?resume=1
     if request.GET.get("resume") == "1":
@@ -114,7 +108,7 @@ def play_page(request, page_id: int):
     choices = data.get("choices", [])
 
     # autosave current page
-    session_key = _get_session_key(request)
+    session_key = get_session_key(request)
     story_id = page.get("story_id")
     if story_id is not None:
         PlaySession.objects.update_or_create(
@@ -151,7 +145,7 @@ def choose(request, page_id: int):
 
 @login_required
 def play_reset(request, story_id: int):
-    session_key = _get_session_key(request)
+    session_key = get_session_key(request)
     PlaySession.objects.filter(session_key=session_key, story_id=story_id).delete()
 
     for k in list(request.session.keys()):
@@ -262,7 +256,7 @@ def story_builder(request, story_id: int):
     )
 @login_required
 def play_resume(request, story_id: int):
-    session_key = _get_session_key(request)
+    session_key = get_session_key(request)
     ps = PlaySession.objects.filter(session_key=session_key, story_id=story_id).first()
     if not ps:
         messages.info(request, "No saved progress for this story. Starting from the beginning.")
